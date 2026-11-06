@@ -1,11 +1,13 @@
 import AppKit
 
-/// Draws the idle pose used when the machine is busy with nothing.
+/// Fallback idle pose, used only when a character has no bundled rest image.
 ///
-/// The bundled artwork only ships a running cycle, so the resting pose is
-/// drawn programmatically — a curled-up animal that breathes and sways its
-/// tail. It uses the same cream-and-brown palette as the coloured artwork, so
-/// it stays legible on both light and dark menu bars.
+/// Both characters now ship their own resting artwork — the cat a standing
+/// still chroma-keyed from its green-screen video, the dog a 120-frame
+/// animation — so this drawn pose is a safety net for missing resources. It
+/// is a curled-up animal that breathes and sways its tail, in the same
+/// cream-and-brown palette as the coloured artwork so it stays legible on
+/// both light and dark menu bars.
 enum IdleArt {
 
     /// The size the pose is drawn at.

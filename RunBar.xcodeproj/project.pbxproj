@@ -71,6 +71,7 @@
 		4D656F7A84E5CD9A7887B0D4 /* rest_dog_062.png in Resources */ = {isa = PBXBuildFile; fileRef = 5C3EFCAC1C3997803B1AF668 /* rest_dog_062.png */; };
 		4D8EBE1C5C7C64743740BC38 /* dog_run_05.png in Resources */ = {isa = PBXBuildFile; fileRef = 4FB21B897C09D7A15F40C445 /* dog_run_05.png */; };
 		4ED5751414DE03D06B1CD59C /* cat_run_31.png in Resources */ = {isa = PBXBuildFile; fileRef = 5733A5A270877EC0A02DB563 /* cat_run_31.png */; };
+		505C6B912363DDCDB1531A42 /* rest_cat.png in Resources */ = {isa = PBXBuildFile; fileRef = 8905F1194DF1D7B0CCC004DE /* rest_cat.png */; };
 		5190EEB909E1B11509B004C2 /* rest_dog_023.png in Resources */ = {isa = PBXBuildFile; fileRef = 7663B02F569537CDD41943FF /* rest_dog_023.png */; };
 		51EC3E45BA2A2D939B339F1E /* rest_dog_003.png in Resources */ = {isa = PBXBuildFile; fileRef = 14C346093C2CE0A56C8A7910 /* rest_dog_003.png */; };
 		52CD4A2DAD1F3C28EE459C15 /* rest_dog_054.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B4830EDC406D7070590608 /* rest_dog_054.png */; };
@@ -321,6 +322,7 @@
 		86C210E7F9A5FD8407ED7181 /* rest_dog_011.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rest_dog_011.png; sourceTree = "<group>"; };
 		873B446169B2433DBB1C8B73 /* rest_dog_069.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rest_dog_069.png; sourceTree = "<group>"; };
 		880390B8DAA71357363829D4 /* rest_dog_089.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rest_dog_089.png; sourceTree = "<group>"; };
+		8905F1194DF1D7B0CCC004DE /* rest_cat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rest_cat.png; sourceTree = "<group>"; };
 		8BC1CEF8E18CC010818A5E91 /* cat_run_03.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cat_run_03.png; sourceTree = "<group>"; };
 		8F961302CC5CEFA847F5511A /* rest_dog_116.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rest_dog_116.png; sourceTree = "<group>"; };
 		90FF269581C8CF9409DC849B /* rest_dog_021.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rest_dog_021.png; sourceTree = "<group>"; };
@@ -407,6 +409,7 @@
 		43E3598CCBE4812A153A55A4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8905F1194DF1D7B0CCC004DE /* rest_cat.png */,
 				EFD5A89C3986BCCA2C0259F5 /* CatFrames */,
 				DE18CB0DA8A5C198F82955C3 /* DogFrames */,
 				7B403A48860209B0D605E529 /* RestDogFrames */,
@@ -779,6 +782,7 @@
 				8FCE0F9297F9CDB2303CC957 /* dog_run_29.png in Resources */,
 				5A99FC4266B76CDA1A79D983 /* dog_run_30.png in Resources */,
 				1B9816579258A364C04B2317 /* dog_run_31.png in Resources */,
+				505C6B912363DDCDB1531A42 /* rest_cat.png in Resources */,
 				D00B48A96DF96C8C8A1E984E /* rest_dog_000.png in Resources */,
 				79480B29717C7F5139CAB5AB /* rest_dog_001.png in Resources */,
 				88A6D6F4064F140EDC2CFB26 /* rest_dog_002.png in Resources */,

@@ -6,8 +6,8 @@ import AppKit
 /// them, so the rest of the app does not have to care which one is active.
 enum Character: String, CaseIterable, Identifiable {
 
-    /// The orange-and-white walking cat, cut out of an animation supplied by
-    /// the user.
+    /// The orange-and-white walking cat, chroma-keyed out of a green-screen
+    /// video supplied by the user.
     case cat
 
     /// The bouncing dog, drawn by hand and supplied by the user.
@@ -25,9 +25,9 @@ enum Character: String, CaseIterable, Identifiable {
 
     /// Number of frames in one animation cycle.
     ///
-    /// Both characters ship 32-frame cycles: the cat's walk is a full loop
-    /// extracted from the user's animation, and the dog's cycle was
-    /// interpolated up to thirty-two frames from the sixteen in its source.
+    /// Both characters ship 32-frame cycles: the cat's walk is a closed loop
+    /// chroma-keyed from the user's green-screen video, and the dog's cycle
+    /// was interpolated up to thirty-two frames from the sixteen in its source.
     var frameCount: Int { 32 }
 
     /// The loop length that one "stride" was originally defined against.
@@ -95,10 +95,11 @@ enum Character: String, CaseIterable, Identifiable {
     /// How fast the resting artwork plays, in frames per second.
     ///
     /// The resting loop is independent of the running speeds: its bucket has
-    /// no stride rate to use. The cat's five procedurally drawn poses turn
-    /// over at 0.8 cycles per second (4 fps), while the dog's resting
+    /// no stride rate to use. The cat uses a single standing still cut from
+    /// its green-screen video, so the rate is irrelevant; the dog's resting
     /// artwork is a six-second animation exported at 20 fps and plays at its
-    /// native rate.
+    /// native rate. If a still is missing, `IdleArt` falls back to five
+    /// procedurally drawn poses at 4 fps.
     var restingFrameRate: Double {
         switch self {
         case .cat: return 4.0
