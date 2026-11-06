@@ -6,8 +6,8 @@ import AppKit
 /// them, so the rest of the app does not have to care which one is active.
 enum Character: String, CaseIterable, Identifiable {
 
-    /// The running cat from [RunCat365](https://github.com/runcat-dev/RunCat365)
-    /// (Apache-2.0).
+    /// The orange-and-white walking cat, cut out of an animation supplied by
+    /// the user.
     case cat
 
     /// The bouncing dog, drawn by hand and supplied by the user.
@@ -25,14 +25,19 @@ enum Character: String, CaseIterable, Identifiable {
 
     /// Number of frames in one animation cycle.
     ///
-    /// The dog's cycle was interpolated up to thirty-two frames from the
-    /// sixteen in the source animation, so it can be played back smoothly.
-    var frameCount: Int {
-        switch self {
-        case .cat: return 5
-        case .dog: return 32
-        }
-    }
+    /// Both characters ship 32-frame cycles: the cat's walk is a full loop
+    /// extracted from the user's animation, and the dog's cycle was
+    /// interpolated up to thirty-two frames from the sixteen in its source.
+    var frameCount: Int { 32 }
+
+    /// The loop length that one "stride" was originally defined against.
+    ///
+    /// Tier speeds are expressed in strides per second using the original
+    /// five-frame cat as the reference. Keeping that number fixed — instead of
+    /// deriving it from `frameCount` — means swapping in a longer animation
+    /// does not silently multiply the frame rate: at 32 frames, an unscaled
+    /// 9 strides/s would ask the display for 288 frames per second.
+    static let referenceCycleLength: Double = 5
 
     /// The names of the bundled frame resources, in playback order.
     private var frameNames: [String] {
@@ -70,32 +75,30 @@ enum Character: String, CaseIterable, Identifiable {
 
     /// Whether the character's artwork can be recoloured.
     ///
-    /// The cat is a monochrome silhouette, so it can be tinted black or white
-    /// to match the menu bar. The dog is a coloured drawing whose black
-    /// outline is what makes it recognisable at this size — flattening it to
-    /// a solid shape turns it into an unreadable blob — so it keeps its
-    /// colours and works on both light and dark menu bars.
-    var supportsRecolouring: Bool {
-        self == .cat
-    }
+    /// Both characters are coloured drawings with a dark outline: flattening
+    /// them to a single colour loses the markings that make them readable at
+    /// 22 points, so neither is tinted. The switch stays here in case a
+    /// monochrome artwork is added later.
+    var supportsRecolouring: Bool { false }
 
     /// How much to scale the tier's speed for this character.
     ///
-    /// The speeds in `LoadTier` are expressed in strides per second, and one
-    /// stride covers the character's whole animation cycle. The cat's cycle is
-    /// five frames and the dog's is thirty-two, so at the same stride rate
-    /// the dog would appear to move more than six times faster. Scaling by
-    /// the frame-count ratio keeps the visual pace the same for both.
+    /// One stride covers the character's whole animation cycle. A 32-frame
+    /// cycle would play over six times faster than the five-frame loop the
+    /// speeds were written for, so the speed is scaled by the ratio between
+    /// the reference loop and the real frame count. This keeps the visual
+    /// frame rate identical for both characters.
     var speedScale: Double {
-        Double(Character.cat.frameCount) / Double(frameCount)
+        Character.referenceCycleLength / Double(frameCount)
     }
 
     /// How fast the resting artwork plays, in frames per second.
     ///
     /// The resting loop is independent of the running speeds: its bucket has
-    /// no stride rate to use. The cat's five-frame procedural pose turns over
-    /// at 0.8 cycles per second (4 fps), while the dog's resting artwork is a
-    /// six-second animation exported at 20 fps and plays at its native rate.
+    /// no stride rate to use. The cat's five procedurally drawn poses turn
+    /// over at 0.8 cycles per second (4 fps), while the dog's resting
+    /// artwork is a six-second animation exported at 20 fps and plays at its
+    /// native rate.
     var restingFrameRate: Double {
         switch self {
         case .cat: return 4.0
@@ -105,11 +108,11 @@ enum Character: String, CaseIterable, Identifiable {
 
     /// The fastest this character may run, in strides per second.
     ///
-    /// The limit is really about the *visual* frame rate: a stride of the cat
-    /// shows five frames and a stride of the dog shows thirty-two, so the same
-    /// stride rate would ask the dog for far more frames than the display can
-    /// show. Capping at the frame rate keeps both characters within it.
+    /// The limit is really about the *visual* frame rate: a stride shows the
+    /// whole frame cycle, so the cap has to shrink as the cycle grows. Using
+    /// the fixed reference loop keeps both characters within the display's
+    /// refresh rate.
     var maximumSpeed: Double {
-        LoadTier.maximumSafeSpeed * Double(Character.cat.frameCount) / Double(frameCount)
+        LoadTier.maximumSafeSpeed * Character.referenceCycleLength / Double(frameCount)
     }
 }

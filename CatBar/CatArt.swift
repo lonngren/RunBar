@@ -4,8 +4,8 @@ import AppKit
 ///
 /// The bundled artwork only ships a running cycle, so the resting pose is
 /// drawn programmatically — a curled-up animal that breathes and sways its
-/// tail. It is drawn in the same monochrome silhouette style as the cat, so
-/// it can be recoloured for the menu bar.
+/// tail. It uses the same cream-and-brown palette as the coloured artwork, so
+/// it stays legible on both light and dark menu bars.
 enum IdleArt {
 
     /// The size the pose is drawn at.
@@ -31,8 +31,8 @@ enum IdleArt {
     ///
     /// An animated rest pose is a numbered sequence `rest_<character>_NNN.png`;
     /// a single `rest_<character>.png` is treated as a still. The images are
-    /// shown as-is, so they should already be in the character's colours;
-    /// only the cat, which is a plain silhouette, gets recoloured afterwards.
+    /// shown as-is, so they should already be in the character's colours and
+    /// include their own outline.
     static func loadRestingFrames(for character: Character) -> [NSImage]? {
         let prefix = "rest_\(character.rawValue)_"
         var sequence: [NSImage] = []
@@ -113,7 +113,10 @@ enum IdleArt {
         let tailSway = CGFloat(sin(t * 2 * .pi)) * 1.6
         let isDog = character == .dog
 
-        let ink = NSColor.white
+        // Cream fill with a dark brown outline, matching the bundled coloured
+        // artwork and staying legible on both light and dark menu bars.
+        let fill = NSColor(calibratedRed: 0.98, green: 0.97, blue: 0.95, alpha: 1)
+        let ink = NSColor(calibratedRed: 0.44, green: 0.34, blue: 0.26, alpha: 1)
 
         // Body: a low, compact haunch — the animal is lying down, so it
         // should not tower over the frame the way a sitting one would.
@@ -126,10 +129,13 @@ enum IdleArt {
             : CGRect(x: 25.8, y: 6.6 + breathe, width: 5.0, height: 3.6)
 
         ctx.saveGState()
-        ctx.setFillColor(ink.cgColor)
-        ctx.fillEllipse(in: haunch)
-        ctx.fillEllipse(in: head)
-        ctx.fillEllipse(in: muzzle)
+        ctx.setFillColor(fill.cgColor)
+        ctx.setStrokeColor(ink.cgColor)
+        ctx.setLineWidth(0.9)
+        for shape in [haunch, head, muzzle] {
+            ctx.fillEllipse(in: shape)
+            ctx.strokeEllipse(in: shape)
+        }
 
         // Ears. The cat's fold back as it dozes; the dog's stay upright and
         // pointy, which is what makes the resting dog recognisable.
@@ -144,8 +150,8 @@ enum IdleArt {
             ctx.move(to: ear[0])
             for point in ear.dropFirst() { ctx.addLine(to: point) }
             ctx.closePath()
+            ctx.drawPath(using: .fillStroke)
         }
-        ctx.fillPath()
 
         // Tail curled around the body, tucked in front.
         let tailBase = CGPoint(x: 8.6, y: 13.6 + breathe)
@@ -159,7 +165,7 @@ enum IdleArt {
             tipWidth: 1.0
         )
         ctx.addPath(tailPath)
-        ctx.fillPath()
+        ctx.drawPath(using: .fillStroke)
 
         // Front paws, stretched out in front of the chest.
         ctx.setStrokeColor(ink.cgColor)

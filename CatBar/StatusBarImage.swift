@@ -1,11 +1,11 @@
 import AppKit
 
-/// Recolours the monochrome cat frames so they follow the menu bar's
-/// appearance, and can optionally show a numeric CPU readout next to the cat.
+/// Builds the image shown in the status bar: the character, plus an optional
+/// numeric CPU readout.
 ///
-/// The reference implementation (RunCat365) does the same thing: the frames are
-/// drawn as pure silhouettes and recoloured at runtime, which keeps them
-/// legible in both light and dark mode.
+/// Both bundled characters are coloured drawings with dark outlines, so they
+/// are shown as-is. The recolouring helper below is kept for monochrome
+/// artwork that may be added later.
 enum StatusBarImage {
 
     /// Height of the composed image, in points.

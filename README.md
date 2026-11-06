@@ -2,7 +2,7 @@
 
 一只住在 macOS 菜单栏里的小猫（或小狗）。CPU 占用越高，它跑得越快；占用低时坐下来休息。
 
-![platform](https://img.shields.io/badge/platform-macOS%2013+-blue) ![swift](https://img.shields.io/badge/Swift-5.0-orange) ![license](https://img.shields.io/badge/artwork-Apache--2.0-green)
+![platform](https://img.shields.io/badge/platform-macOS%2013+-blue) ![swift](https://img.shields.io/badge/Swift-5.0-orange)
 
 [源码仓库](https://github.com/lonngren/RunBar) · [下载最新版 DMG](https://github.com/lonngren/RunBar/releases/latest) · [反馈问题](https://github.com/lonngren/RunBar/issues)
 
@@ -20,9 +20,9 @@
 ## 特性
 
 - **版本信息**：设置窗口底部标注版本号（1.0）、作者（龙少）和构建日期。
-- **两种角色**：小猫来自 [RunCat365](https://github.com/runcat-dev/RunCat365)，5 帧奔跑循环；小狗是 32 帧跳跃飞扑的手绘动画。右键菜单或设置窗口随时切换。
+- **两种角色**：小猫是用户提供的橘白走路动画（32 帧循环），小狗是 32 帧跳跃飞扑的手绘动画。右键菜单或设置窗口随时切换。
 - **休息动画**：CPU 低于 10% 时进入休息档 —— 小猫保持静止姿势，小狗播放用户提供的坐姿 GIF（摇尾巴、眨眼，6 秒循环，20 fps）。
-- **白色剪影**：小猫是白色剪影；小狗保留彩色手绘描边，在浅色和深色菜单栏下都清晰可见。
+- **彩色插画**：两个角色都保留原有配色和深色描边，在浅色和深色菜单栏下都清晰可见。
 - **高清重制**：所有素材统一裁剪出内容边界并重渲染到 4x，Retina 下依然锐利。
 - **速度随 CPU 变化**：占用分成十档，每档步速可以单独调节。
 - **不占 Dock**：纯菜单栏应用，`LSUIElement = true`；支持开机自启。
@@ -79,13 +79,15 @@ xcodebuild -project RunBar.xcodeproj -scheme RunBar -configuration Release build
 
 | 角色 | 素材 | 帧数 | 说明 |
 | --- | --- | --- | --- |
-| 小猫 | RunCat365（Apache-2.0） | 5 | 奔跑循环，单色剪影 |
+| 小猫 | 用户提供的橘白走路 GIF | 32 | 走路循环，橘色斑纹 + 奶白身体 + 深棕描边 |
 | 小狗 | 用户提供的手绘 GIF | 32 | 跳跃飞扑循环，彩色描边 |
 | 小狗（休息） | 用户提供的坐姿视频 / GIF | 120 | 6 秒循环，20 fps，透明底 |
 
-小狗保留彩色而不做成剪影，是因为它的**黑色描边才是可辨识的关键**——实测把它填成纯色实心块后，耳朵、腿、尾巴全部糊在一起，完全看不出是狗。
+两个角色都保留彩色而不做成剪影，是因为**深色描边和斑纹才是可辨识的关键**——实测把小狗填成纯色实心块后，耳朵、腿、尾巴全部糊在一起，完全看不出是狗。
 
-小猫固定是**白色剪影**，在浅色和深色菜单栏下都能看清，因此没有颜色设置项。
+小猫素材原本是浅灰底插画，白色身体和背景几乎同色，处理时把橘色斑纹当作轮廓种子、重新填充奶白身体并补了一圈深棕描边，这样在浅色和深色菜单栏下都看得清。两种角色都无需颜色设置项。
+
+![小猫走路动画逐帧预览](Docs/CatWalk-Preview.png)
 
 ### 关于补帧
 
@@ -97,11 +99,20 @@ xcodebuild -project RunBar.xcodeproj -scheme RunBar -configuration Release build
 2. 把相邻两帧各自向对方平移一半距离，让它们在重心上对齐
 3. 形变（跳跃时的展开↔团起）是平移补偿不了的，所以中间帧取两者中**边缘更锐利**的那个，而不是混合
 
-两个角色的动画循环长度不同（5 帧 vs 32 帧），所以速度按帧数比例归一化，保证同一档位下两者的**视觉帧率完全一致**。
+两种角色现在都是 32 帧循环。档位速度里的「步」沿用最初 5 帧循环的参考长度（`Character.referenceCycleLength`），按帧数比例归一化后再驱动动画，保证同一档位下两者的**视觉帧率完全一致**，也避免把 32 帧素材当成 5 帧素材、让帧率放大六倍。
+
+### 关于小猫素材
+
+用户提供的走路 GIF 是 800×450、193 帧、8 秒，猫从画面左侧走到右侧，背景是浅灰渐变并带水印。处理流程见 `Tools/CatFrames/make_frames.py`：
+
+1. 用画面上方确定是背景的区域拟合二次曲面，得到逐像素背景模型；水印是静态的，做差时自动消失
+2. 白色猫身与浅灰底几乎同色，直接颜色抠图会把身体挖空。改为把明显偏离背景的橘色斑纹 / 描边当作**拓扑种子**，大尺度闭运算连成外壳后填充孔洞，得到整只猫的轮廓
+3. 轮廓内保留橘色细节，其余重绘为奶白，外缘补一圈深棕描边 —— 这是白色小猫在浅色菜单栏下仍能看清的关键
+4. 每帧按轮廓质心平移对齐（把「横向走过」变成「原地走」），取 32 帧连续循环，按全帧并集裁剪框等比缩放到 176×88（44×22 pt @4x）
 
 ### 关于休息动画
 
-低占用档没有步速概念，休息素材按自己的帧率播放：小猫是 5 帧程序绘制的姿态（4 fps），小狗是 `rest_dog_000.png` … `rest_dog_119.png` 的 120 帧序列（20 fps）。两种角色都支持单张 `rest_<角色>.png` 作为静态回退。
+低占用档没有步速概念，休息素材按自己的帧率播放：小猫是 5 帧程序绘制的蜷卧姿态（4 fps，配色与新的橘白素材一致），小狗是 `rest_dog_000.png` … `rest_dog_119.png` 的 120 帧序列（20 fps）。两种角色都支持单张 `rest_<角色>.png` 作为静态回退。
 
 坐姿素材的来源视频把「透明」画成了灰白棋盘格。普通颜色抠图在这里行不通：**狗身和亮格同为白色**，抠掉背景就会把狗身一起擦掉。处理方式见 `Tools/RestDogFrames`：
 
@@ -132,7 +143,7 @@ CPU 占用被分成十个区间，每档对应一个固定速度：
 
 分档而不是连续映射，是为了彻底消除抽搐：档位内速度完全恒定，动画平稳不动。边界上加了 3 个百分点的迟滞 —— 负载在分界线上反复波动时，不会来回跳档。实测同样波动的负载，无迟滞会跳 143 次，有迟滞是 0 次。
 
-最高档是 11.5 步/秒而非 12，因为 12 正好是帧数 5 的整数倍，会导致每次刷新都整帧跳过、偶尔丢帧。
+最高档是 11.5 步/秒而非 12，因为 12 正好是参考循环 5 帧的整数倍（60 帧/秒），会导致每次刷新都整帧跳过、偶尔丢帧。
 
 ### 关于速度倍率
 
@@ -162,7 +173,7 @@ CatBar/
 │   ├── SystemCPUSampler.swift   # mach 内核接口采样 CPU
 │   ├── StatusBarImage.swift     # 主题重着色 + 数字合成
 │   ├── AutoStart.swift          # 开机自启（LaunchAgent）
-│   ├── Resources/CatFrames/     # 小猫 5 帧 PNG（4x 高清）
+│   ├── Resources/CatFrames/     # 小猫 32 帧 PNG（4x 高清）
 │   ├── Resources/DogFrames/     # 小狗 32 帧 PNG（4x 高清）
 │   ├── Resources/RestDogFrames/ # 小狗休息 120 帧 PNG（4x 高清）
 │   └── Assets.xcassets/         # 应用图标
@@ -173,6 +184,7 @@ CatBar/
     ├── ColorModes/main.swift    # 渲染颜色模式对比
     ├── DumpStatusIcon/main.swift # 导出运行时状态栏图标
     ├── DogFrames/main.swift     # 从 GIF 导出小狗素材（含补帧）
+    ├── CatFrames/               # 走路 GIF → 小猫透明帧序列
     ├── RestDogFrames/           # 休息视频 → 透明帧序列
     ├── PreviewGIF/              # 生成 README 的奔跑 / 坐姿展示 GIF
     ├── VideoToGIF/main.swift    # 视频转 GIF
@@ -183,9 +195,7 @@ CatBar/
 
 ### 素材处理
 
-原图是 120×100 的画布，但猫的实际内容只占约 113×72，其余是透明留白。直接缩放到菜单栏尺寸会导致猫变得极小且模糊。
-
-处理流程：读取每帧的 alpha 通道求出内容边界 → 取所有帧的并集作为统一裁剪框（保证动画中角色不会跳动）→ 用高质量插值重渲染到 4x。
+所有帧都先求内容边界，取整个循环的**并集裁剪框**（保证动画中角色不会跳动），再用高质量插值等比重渲染到 4x 画布居中。小猫是 176×88（44×22 pt @4x），小狗是 116×88（29×22 pt @4x）。
 
 ## 打包发行
 
@@ -229,6 +239,9 @@ python3 Tools/PreviewGIF/make_preview.py \
 # 生成应用图标
 swift Tools/AppIcon/main.swift CatBar/Assets.xcassets/AppIcon.appiconset
 
+# 重新生成小猫走路帧（需要用户提供的原始走路 GIF）
+python3 Tools/CatFrames/make_frames.py cat-walk.gif CatBar/Resources/CatFrames
+
 # 重新生成小狗休息帧（需要原视频）
 swift Tools/RestDogFrames/ExtractFrames.swift rundog.mp4 /tmp/rest_raw 20
 python3 Tools/RestDogFrames/make_frames.py /tmp/rest_raw CatBar/Resources/RestDogFrames 20
@@ -242,5 +255,4 @@ swift Tools/VerifySettings/main.swift
 
 ## 致谢
 
-猫的美术素材来自 [RunCat365](https://github.com/runcat-dev/RunCat365)（Apache-2.0），作者 Takuto Nakamura。
-小狗奔跑与休息素材由用户提供。本项目为其 macOS 版本实现，动画思路参考 RunCat365 的做法。
+小猫走路动画、小狗奔跑与休息素材均由用户提供。本项目为这些素材的 macOS 菜单栏版本实现。

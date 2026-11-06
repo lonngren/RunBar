@@ -129,14 +129,14 @@ struct SettingsView: View {
             } header: {
                 Text("菜单栏图标")
             } footer: {
-                Text("小狗是彩色的，黑色描边让它在明暗两种菜单栏下都清晰可见；\n小猫是白色剪影，同样在两种背景下都看得清。\nCPU 空闲时，小狗会坐下休息（摇尾巴、眨眼），小猫保持静止姿势。")
+                Text("小猫是橘白走路动画，小狗是彩色手绘奔跑动画，都带深色描边，明暗两种菜单栏下都清晰可见。\nCPU 空闲时，小狗会坐下休息（摇尾巴、眨眼），小猫保持静止姿势。")
             }
 
             Section {
                 Toggle("在菜单栏显示 CPU 百分比", isOn: $settings.showsPercentage)
                     .onChange(of: settings.showsPercentage) { _ in onChange() }
             } footer: {
-                Text("显示后，小猫旁边会出现实时占用数字，例如 42%。")
+                Text("显示后，图标旁边会出现实时占用数字，例如 42%。")
             }
         }
         .formStyle(.grouped)

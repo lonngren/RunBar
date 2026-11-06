@@ -30,10 +30,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private let sampler = SystemCPUSampler()
 
-    /// Frames drawn in white; they get recoloured for the current appearance.
+    /// The character's running frames, as bundled in the app.
     private var runFrames: [NSImage] = []
     private var idleFrames: [NSImage] = []
-    /// Recoloured copies of `runFrames` / `idleFrames` for the current appearance.
+    /// Frames shown in the status bar. For coloured artwork these are the
+    /// originals; a monochrome character would be tinted here.
     private var tintedRunFrames: [NSImage] = []
     private var tintedIdleFrames: [NSImage] = []
 
@@ -133,9 +134,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             .store(in: &cancellables)
 
-        // The colour mode is read straight from the settings when the frames
-        // are tinted, so a change only needs the tint to be redone.
-
         settings.$speedMultiplier
             .dropFirst()
             .sink { [weak self] multiplier in
@@ -199,8 +197,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Loads the frames for the active character.
     ///
-    /// The dog is a coloured drawing, so only the cat gets recoloured for the
-    /// menu bar's appearance.
+    /// Both characters are coloured drawings, so their bundled frames are
+    /// shown as-is.
     ///
     /// - Parameter character: the character to load. It is passed in rather
     ///   than read from the settings, because a `@Published` publisher fires
@@ -212,8 +210,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         runFrames = character.loadFrames()
         idleFrames = IdleArt.buildFrames(for: character)
 
-        // The dog cycles through many more frames than the cat, so its frame
-        // rate has to be scaled down to keep the same visual pace.
+        // `speedScale` normalises the stride rate to this character's cycle
+        // length, so both characters keep the same visual pace.
         frameCount = character.frameCount
 
         // Force the tint to be recomputed for the new character's frames.
@@ -240,19 +238,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // `refreshAppearance`, which runs straight after this.
     }
 
-    /// Recolours the frames for the current colour mode.
+    /// Prepares the frames for the current appearance.
     ///
-    /// Runs on launch, when the user changes the mode, and when the system
-    /// appearance changes (which only matters in automatic mode).
+    /// Runs on launch and whenever the system appearance changes. Coloured
+    /// artwork is used unchanged; a monochrome character would be tinted here.
     private func refreshAppearance(force: Bool = false) {
         let isDark = false
 
         guard force || tintedIsDark != isDark else { return }
         tintedIsDark = isDark
 
-        // The dog is a coloured drawing — its black outline is what makes it
-        // recognisable at 22 points, so it must not be flattened into a solid
-        // silhouette. Only the cat gets recoloured.
+        // Both characters are coloured drawings whose outlines make them
+        // recognisable at 22 points, so neither is flattened into a silhouette.
         if character.supportsRecolouring {
             let color = StatusBarImage.silhouetteColor
             tintedRunFrames = runFrames.map { StatusBarImage.recolor($0, to: color) }
@@ -293,7 +290,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(tiers)
         let tierMenu = NSMenu()
         for tier in LoadTier.allCases {
-            let speed = settings.speed(for: tier, character: settings.character)
+            // Show the speed the user set for this band. The internal stride
+            // rate is scaled to the character's cycle length (see
+            // `Character.speedScale`), so showing it here would disagree with
+            // the sliders in the settings window.
+            let speed = settings.baseSpeed(for: tier) * settings.speedMultiplier
             let label = tier.isResting
                 ? "\(tier.rangeText) → 休息"
                 : "\(tier.rangeText) → \(String(format: "%.1f", speed)) 步/秒"
@@ -386,7 +387,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusDescription: String {
         if isIdle { return "休息 💤" }
-        return "\(tier.rangeText)（\(String(format: "%.1f", currentSpeed)) 步/秒）"
+        // `currentSpeed` is scaled for the artwork; divide it back so the
+        // readout matches the numbers shown in the settings window.
+        let shown = currentSpeed / max(0.0001, character.speedScale)
+        return "\(tier.rangeText)（\(String(format: "%.1f", shown)) 步/秒）"
     }
 
     // MARK: - Actions
@@ -423,7 +427,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings.character = character
     }
 
-    /// Switches the cat's colour and applies it immediately.
     /// Changes how often the CPU is sampled.
     @objc private func selectSamplingInterval(_ sender: NSMenuItem) {
         guard Settings.samplingIntervals.indices.contains(sender.tag) else { return }

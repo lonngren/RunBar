@@ -17,10 +17,11 @@ enum LoadTier: Int, CaseIterable {
 
     /// The fastest the character may run, in strides per second.
     ///
-    /// Over the 5 animation frames this is 57.5 frames/s, just under the
-    /// display's refresh rate. An exact multiple of the frame rate would
-    /// advance a whole frame on every tick, which occasionally skips a frame
-    /// and reads as a stutter.
+    /// Against the five-frame reference loop this is 57.5 frames/s, just
+    /// under the display's refresh rate. An exact multiple of the frame rate
+    /// would advance a whole frame on every tick, which occasionally skips a
+    /// frame and reads as a stutter. `Character.speedScale` applies the same
+    /// ratio to artwork with a longer cycle.
     static let maximumSafeSpeed: Double = 11.5
 
     /// The load ranges, ten percent each.
