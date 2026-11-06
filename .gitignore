@@ -1,0 +1,14 @@
+build/
+build-debug/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+.DS_Store
+
+# 构建与发行产物：DMG、zip、App 通过 GitHub Release 分发，不进源码仓库
+*.dmg
+*.zip
+*.app/
+*.pkg
+
+# 旧的 CatBar 工程，现行工程为 RunBar.xcodeproj
+CatBar.xcodeproj/
