@@ -6,7 +6,16 @@
 
 [源码仓库](https://github.com/lonngren/RunBar) · [下载最新版 DMG](https://github.com/lonngren/RunBar/releases/latest) · [反馈问题](https://github.com/lonngren/RunBar/issues)
 
-![小狗休息动画预览](Docs/RestDog-Preview.png)
+## 效果预览
+
+<table>
+  <tr>
+    <td align="center" width="50%"><strong>奔跑 · CPU 占用高</strong><br><br><img src="Docs/dog-running.gif" width="330" alt="小狗奔跑动画"></td>
+    <td align="center" width="50%"><strong>休息 · CPU 0–10%</strong><br><br><img src="Docs/dog-resting.gif" width="330" alt="小狗坐姿休息动画"></td>
+  </tr>
+</table>
+
+两张动图都由 App 内置的帧资源直接渲染（深灰底模拟 macOS 菜单栏，左侧文字是状态栏里的 CPU 数字）：奔跑用 `DogFrames` 的 32 帧循环，坐姿用 `RestDogFrames` 的全部 120 帧、按 App 内的 20 fps 播放，一个循环 6 秒。背景刻意做成不透明 —— 坐姿小狗通体白色，透明底在 GitHub 浅色主题下会看不见。生成方式见 `Tools/PreviewGIF/make_preview.py`。
 
 ## 特性
 
@@ -100,6 +109,8 @@ xcodebuild -project RunBar.xcodeproj -scheme RunBar -configuration Release build
 2. `make_frames.py` 把黑色描边和彩色细节当作**拓扑边界**，稍作膨胀封住手绘线条的缝隙，再填充所有被围住的区域 —— 围住的是狗，连到画面边缘的是背景
 3. 取所有帧的**并集裁剪框**（尾巴左右摆动也不会让身体跳动），缩放到 116×88 的 4x 画布居中，生成透明 PNG
 
+![休息动画逐帧预览](Docs/RestDog-Preview.png)
+
 ### 速度档位
 
 CPU 占用被分成十个区间，每档对应一个固定速度：
@@ -163,6 +174,7 @@ CatBar/
     ├── DumpStatusIcon/main.swift # 导出运行时状态栏图标
     ├── DogFrames/main.swift     # 从 GIF 导出小狗素材（含补帧）
     ├── RestDogFrames/           # 休息视频 → 透明帧序列
+    ├── PreviewGIF/              # 生成 README 的奔跑 / 坐姿展示 GIF
     ├── VideoToGIF/main.swift    # 视频转 GIF
     ├── Verify*/main.swift       # 分档、设置、角色切换等逻辑校验
     ├── TraceFrames/main.swift   # 追踪各档位的帧序列
@@ -207,6 +219,12 @@ swift Tools/MenuPreview/main.swift /tmp/menu
 
 # 生成 GIF 预览
 swift Tools/GIF/main.swift /tmp/cat.gif
+
+# 重新生成 README 顶部的两张展示 GIF（需要 Pillow / numpy）
+python3 Tools/PreviewGIF/make_preview.py \
+  --run-dir CatBar/Resources/DogFrames \
+  --rest-dir CatBar/Resources/RestDogFrames \
+  --out-dir Docs
 
 # 生成应用图标
 swift Tools/AppIcon/main.swift CatBar/Assets.xcassets/AppIcon.appiconset
